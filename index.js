@@ -399,18 +399,11 @@ SysLogger.prototype.assert = function(expression) {
 };
 
 /**
- * Get current date in syslog format. Thanks https://github.com/kordless/lodge
+ * Get current date in syslog format.
  * @returns {String}
  */
 SysLogger.prototype.getDate = function() {
-    var dt = new Date();
-    var hours = this.leadZero(dt.getUTCHours());
-    var minutes = this.leadZero(dt.getUTCMinutes());
-    var seconds = this.leadZero(dt.getUTCSeconds());
-    var month = this.leadZero((dt.getUTCMonth() + 1));
-    var day = this.leadZero(dt.getUTCDate());
-    var year = dt.getUTCFullYear();
-    return year+'-'+month+'-'+day+' '+hours+':'+minutes+':'+seconds;
+    return new Date().toISOString();
 }
 
 SysLogger.prototype.leadZero = function(n) {
