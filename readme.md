@@ -41,6 +41,15 @@ After launch in `/var/log/user` you can see the following:
     Dec  5 06:45:26 localhost ex.js[6041]: info
     Dec  5 06:45:26 localhost ex.js[6041]: error
 
+Note: you need to ensure syslog is listening on UDP port 514 for this example to work.  On Ubuntu, for example, you would need to edit ```/etc/rsyslog.conf```, add/uncomment the following lines, and ensure rsyslog is restarted:
+```
+# provides UDP syslog reception
+$ModLoad imudp
+$UDPServerAddress 127.0.0.1
+$UDPServerRun 514
+```
+
+
 ## Singleton logger
 
 If you want to have a singleton that points to the same object whenever you do a require, use the following:
