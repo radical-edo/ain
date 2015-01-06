@@ -42,14 +42,14 @@ var getSocket = function (type) {
 
         socket.on('error', socketErrorHandler)
 
-		// HACK: On Node v0.11.x bind the socket to ensure that it works when clustering
-		// THis should be a temporary fix until node fixes the cluster module
-		if (/^v0\.11\..*$/.test(process.version)) {
-			socket.bind({
-				port: 0,
-				exclusive: true
-			})
-		}
+        // HACK: On Node v0.11.x bind the socket to ensure that it works when clustering
+        // THis should be a temporary fix until node fixes the cluster module
+        if (/^v0\.11\..*$/.test(process.version)) {
+          socket.bind({
+            port: 0,
+            exclusive: true
+          })
+        }
 
     }
 
@@ -109,13 +109,13 @@ var Transport = {
         if (numChunks > 1){
             for (var i = 0; i < numChunks; i++){
                 fragments.push(formattedMessageBuffer.slice(i * chunkSize, Math.min(formattedMessageBuffer.length, (i + 1) * chunkSize)),
-                              new Buffer(' [' + (i + 1) + '/' + numChunks + ']', 'ascii')); 
+                              new Buffer(' [' + (i + 1) + '/' + numChunks + ']', 'ascii'));
             }
         } else{
             fragments.push(formattedMessageBuffer);
         }
 
-        var chunk = Buffer.concat(fragments); 
+        var chunk = Buffer.concat(fragments);
         var socket = getSocket('unix_dgram');
         socket.send(chunk,
                     0,
@@ -260,7 +260,7 @@ SysLogger.prototype.setTransport = function(transport) {
     if (typeof this.transport === 'string') {
         this.transport = Transport[this.transport] ;
     }
-    if (typeof this.path === 'string' && this.path.length > 0){ 
+    if (typeof this.path === 'string' && this.path.length > 0){
         this.transport = Transport.unix_dgram
     }
     return this;
