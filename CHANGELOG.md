@@ -1,5 +1,10 @@
 # CHANGELOG
 
+
+## v1.4.0
+
+* Workaround for issue with node cluster on node 0.11.x (greenboxal)
+
 ## v1.3.1
 
 * Added support for unix-dgram for node versions > 0.5
