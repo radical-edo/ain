@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## v1.5.0
+
+* Bubble up callbacks from udp and unix socket up to the caller
 
 ## v1.4.0
 

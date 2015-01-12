@@ -84,7 +84,7 @@ var releaseSocket = function () {
 
 
 var Transport = {
-    UDP: function(message, severity) {
+    UDP: function(message, severity, callback) {
         var self = this;
         var syslogMessage = this.composerFunction(message, severity);
         getSocket('udp4').send(syslogMessage,
@@ -93,12 +93,16 @@ var Transport = {
                          this.port,
                          this.address,
                          function(err, bytes) {
+                             if(callback){
+                                console.log(callback);
+                                 callback(err, bytes);
+                             }
                              self._logError(err, bytes);
                              releaseSocket();
                          }
                         );
     },
-    unix_dgram: function(message, severity){
+    unix_dgram: function(message, severity, callback){
         var self = this;
         var preambleBuffer = self.composerFunction('', severity);
         var formattedMessageBuffer = Buffer.isBuffer(message) ? message : new Buffer(message);
@@ -122,6 +126,9 @@ var Transport = {
                     chunk.length,
                     this.path,
                     function(err, bytes){
+                        if(callback){
+                          callback(err, bytes);
+                        }
                         self._logError(err, bytes);
                         releaseSocket();
                     }
@@ -164,25 +171,26 @@ var Severity = {
 var formatRegExp = /%[sdj]/g;
 
 /**
- * Just copy from node.js console
- * @param f
+ * Internal message formatting method
+ * @param args [format, arg1, arg2, ...]
  * @returns
  */
-function format(f) {
+function format(args) {
     var   util = require('util'),
-    i    = 0;
+    i    = 0,
+    f    = args[0];
 
+    // inspect the object if no format string was given as the first argument
     if (typeof f !== 'string') {
         var objects = [];
-        for (i = 0; i < arguments.length; i++) {
-            objects.push(util.inspect(arguments[i]));
+        for (i = 0; i < args.length; i++) {
+            objects.push(util.inspect(args[i]));
         }
         return objects.join(' ');
     }
 
 
     i = 1;
-    var args = arguments;
     var str = String(f).replace(formatRegExp, function(x) {
         switch (x) {
             case '%s': return String(args[i++]);
@@ -318,8 +326,8 @@ SysLogger.prototype.setMessageComposer = function(composerFunction){
  * @param {String} message
  * @param {Severity} severity
  */
-SysLogger.prototype._send = function(message, severity) {
-    this.transport(message, severity) ;
+SysLogger.prototype._send = function(message, severity, callback) {
+    this.transport(message, severity, callback) ;
 };
 
 /**
@@ -327,43 +335,80 @@ SysLogger.prototype._send = function(message, severity) {
  * @param {String} message
  * @param {Number|String} severity
  */
-SysLogger.prototype.send = function(message, severity) {
-    severity = severity || Severity.notice;
+SysLogger.prototype.send = function(message, severity, callback) {
     if (typeof severity == 'string'){
         severity = Severity[severity];
     }
-    this._send(message, severity);
+    this._send(message, severity, callback);
 };
+
+SysLogger.prototype.formatAndSend = function(argumentsObject, severity) {
+    var args          = Array.prototype.slice.call(argumentsObject);
+    var callback      = undefined;
+    var message       = undefined;
+
+
+    if(Object.prototype.toString.call(args[args.length - 1]) == "[object Function]"){
+      callback = args.pop();
+    }
+    this._send(format(args), severity, callback);
+};
+
+
+
 
 /**
  * Send log message with notice severity.
  */
 SysLogger.prototype.log = function() {
-    this._send(format.apply(this, arguments), Severity.notice);
+    this.formatAndSend(arguments, Severity.notice);
 };
 /**
  * Send log message with info severity.
  */
 SysLogger.prototype.info = function() {
-    this._send(format.apply(this, arguments), Severity.info);
+    this.formatAndSend(arguments, Severity.info);
 };
 /**
  * Send log message with warn severity.
  */
 SysLogger.prototype.warn = function() {
-    this._send(format.apply(this, arguments), Severity.warn);
+    this.formatAndSend(arguments, Severity.warn);
 };
 /**
  * Send log message with err severity.
  */
 SysLogger.prototype.error = function() {
-    this._send(format.apply(this, arguments), Severity.err);
+    this.formatAndSend(arguments, Severity.err);
 };
 /**
  * Send log message with debug severity.
  */
 SysLogger.prototype.debug = function() {
-    this._send(format.apply(this, arguments), Severity.debug);
+    this.formatAndSend(arguments, Severity.debug);
+};
+
+/**
+ * Log object with `util.inspect` with notice severity
+ */
+SysLogger.prototype.dir = function(object, callback) {
+    var util = require('util');
+    this._send(util.inspect(object) + '\n', Severity.notice);
+};
+
+SysLogger.prototype.trace = function(label, callback) {
+    var err = new Error();
+    err.name = 'Trace';
+    err.message = label || '';
+    Error.captureStackTrace(err, arguments.callee);
+    this.error(err.stack, callback);
+};
+
+SysLogger.prototype.assert = function(expression) {
+    if (!expression) {
+        var arr = Array.prototype.slice.call(arguments, 1);
+        this._send(format(arr), Severity.err);
+    }
 };
 
 
@@ -376,35 +421,12 @@ SysLogger.prototype.composeSyslogMessage = function(message, severity) {
                       this.tag + '[' + process.pid + ']:' + message);
 }
 
-/**
- * Log object with `util.inspect` with notice severity
- */
-SysLogger.prototype.dir = function(object) {
-    var util = require('util');
-    this._send(util.inspect(object) + '\n', Severity.notice);
-};
-
 SysLogger.prototype.time = function(label) {
     this._times[label] = Date.now();
 };
 SysLogger.prototype.timeEnd = function(label) {
     var duration = Date.now() - this._times[label];
     this.log('%s: %dms', label, duration);
-};
-
-SysLogger.prototype.trace = function(label) {
-    var err = new Error();
-    err.name = 'Trace';
-    err.message = label || '';
-    Error.captureStackTrace(err, arguments.callee);
-    this.error(err.stack);
-};
-
-SysLogger.prototype.assert = function(expression) {
-    if (!expression) {
-        var arr = Array.prototype.slice.call(arguments, 1);
-        this._send(format.apply(this, arr), Severity.err);
-    }
 };
 
 /**
