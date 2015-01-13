@@ -28,12 +28,15 @@ You can install *ain* as usual - by copy the "ain" directory in your
 Usage of *ain* is very similar to the *node.js* console. The following example
 demonstrates the replacement of the console:
 
-    var SysLogger = require('ain2');
-    var console = new SysLogger();
+```javascript
 
-    console.log('notice: %d', Date.now());
-    console.info('info');
-    console.error('error');
+var SysLogger = require('ain2');
+var console = new SysLogger();
+
+console.log('notice: %d', Date.now());
+console.info('info');
+console.error('error');
+```
 
 After launch in `/var/log/user` you can see the following:
 
@@ -42,6 +45,7 @@ After launch in `/var/log/user` you can see the following:
     Dec  5 06:45:26 localhost ex.js[6041]: error
 
 Note: you need to ensure syslog is listening on UDP port 514 for this example to work.  On Ubuntu, for example, you would need to edit ```/etc/rsyslog.conf```, add/uncomment the following lines, and ensure rsyslog is restarted:
+
 ```
 # provides UDP syslog reception
 $ModLoad imudp
@@ -49,23 +53,28 @@ $UDPServerAddress 127.0.0.1
 $UDPServerRun 514
 ```
 
-
 ## Singleton logger
 
 If you want to have a singleton that points to the same object whenever you do a require, use the following:
 
-	require('ain2').getInstance();
+```javascript
+  require('ain2').getInstance();
+```
 
 If you use this, please be beware of this:
 
-	require('ain2').getInstance() ===  require('ain2').getInstance();
-	=> true
+```javascript
+require('ain2').getInstance() ===  require('ain2').getInstance();
+=> true
+```
 
 As opposed to:
 
-	var SysLogger = require('ain2');
-	new SysLogger() === new SysLogger();
-	=> false
+```javascript
+var SysLogger = require('ain2');
+new SysLogger() === new SysLogger();
+=> false
+```
 
 ## Changing destinations
 
@@ -80,10 +89,13 @@ By default *ain* sets following destinations:
 You can change them by passing in the params to the constructor or by
 using the `set` function. The `set` function is chainable.
 
-    var SysLogger = require('ain2');
-    var logger = new SysLogger({tag: 'node-test-app', facility: 'daemon', hostname: 'devhost', port: 3000});
 
-    logger.warn('some warning');
+```javascript
+var SysLogger = require('ain2');
+var logger = new SysLogger({tag: 'node-test-app', facility: 'daemon', hostname: 'devhost', port: 3000});
+
+logger.warn('some warning');
+```
 
 ... and in `/var/log/daemon.log`:
 
@@ -147,36 +159,43 @@ Ain provides an optional callback after a message has been sent to the socket (u
 The callback is passed up unaltered from [node.](http://nodejs.org/api/dgram.html#dgram_socket_send_buf_offset_length_port_address_callback)
 Because ain supports a simplified printf format, the callback has to be the last parameter.
 
-    var SysLogger = require('ain2');
-    var console = new SysLogger();
 
-    console.info('info', function(err, bytes){
-      // callback received
-    });
-    console.log('notice: %d', Date.now(), function(err, bytes){
-      // callback received
-    });
+```javascript
+var SysLogger = require('ain2');
+var console = new SysLogger();
 
+console.info('info', function(err, bytes){
+  // callback received
+});
+console.log('notice: %d', Date.now(), function(err, bytes){
+  // callback received
+});
+
+```
 
 ## Custom message composer
 
-    var SysLogger = require('ain2');
-    var console = new SysLogger();
 
-    console.setMessageComposer(function(message, severity){
-        return new Buffer('<' + (this.facility * 8 + severity) + '>' +
-                this.getDate() + ' ' + '[' + process.pid + ']:' + message);
-    });
+```javascript
+var SysLogger = require('ain2');
+var console = new SysLogger();
+
+console.setMessageComposer(function(message, severity){
+    return new Buffer('<' + (this.facility * 8 + severity) + '>' +
+            this.getDate() + ' ' + '[' + process.pid + ']:' + message);
+});
+```
+
+The default implementation looks this:
 
 
-    //The default implementation looks this:
-
-
-    SysLogger.prototype.composeSyslogMessage = function(message, severity) {
-        return new Buffer('<' + (this.facility * 8 + severity) + '>' +
-                this.getDate() + ' ' + this.hostname + ' ' +
-                this.tag + '[' + process.pid + ']:' + message);
-    }
+```javascript
+SysLogger.prototype.composeSyslogMessage = function(message, severity) {
+    return new Buffer('<' + (this.facility * 8 + severity) + '>' +
+            this.getDate() + ' ' + this.hostname + ' ' +
+            this.tag + '[' + process.pid + ']:' + message);
+}
+```
 
 ## Logging
 
@@ -208,7 +227,9 @@ logs messages with different severity levels:
 
 To log a message with the desired severity level you can use the `send` function:
 
-    logger.send('message', 'alert');
+```javascript
+logger.send('message', 'alert');
+```
 
 The `send` function takes two arguments: message and optional severity level. By
 default, the severity level is *notice*.
