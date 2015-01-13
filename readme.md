@@ -58,7 +58,7 @@ $UDPServerRun 514
 If you want to have a singleton that points to the same object whenever you do a require, use the following:
 
 ```javascript
-  require('ain2').getInstance();
+require('ain2').getInstance();
 ```
 
 If you use this, please be beware of this:
