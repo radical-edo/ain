@@ -94,7 +94,6 @@ var Transport = {
                          this.address,
                          function(err, bytes) {
                              if(callback){
-                                console.log(callback);
                                  callback(err, bytes);
                              }
                              self._logError(err, bytes);
