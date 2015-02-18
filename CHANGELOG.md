@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v1.5.1
+
+* Remove debug console.log (thx chazomaticus)
+
 ## v1.5.0
 
 * Bubble up callbacks from udp and unix socket up to the caller
