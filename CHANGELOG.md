@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v1.5.2
+
+* Fix socket bind problem in combination with cluster.js for node verions > v0.10.x (Issue #33)
+* Have travis test more node versions
+
 ## v1.5.1
 
 * Remove debug console.log (thx chazomaticus)
