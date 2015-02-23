@@ -9,6 +9,17 @@ var SingletonInstance = null;
 var socket
 var socketUsers = 0
 var releaseTimeout
+// HACK: On Node v0.11.x and v0.12.x bind the socket to ensure that it works when clustering
+// This should be a temporary fix until node fixes the cluster module
+var socketBindRequired = (function(){
+    if(/^v0\.([0-9]|10)\..*$/.test(process.version)) {
+      return false;
+    }
+    else {
+      return true;
+    }
+})();
+
 var socketErrorHandler = function (err) {
 
     if (err) {
@@ -42,9 +53,7 @@ var getSocket = function (type) {
 
         socket.on('error', socketErrorHandler)
 
-        // HACK: On Node v0.11.x bind the socket to ensure that it works when clustering
-        // THis should be a temporary fix until node fixes the cluster module
-        if (/^v0\.11\..*$/.test(process.version)) {
+        if (socketBindRequired && type == 'udp4') {
           socket.bind({
             port: 0,
             exclusive: true
