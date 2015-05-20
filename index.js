@@ -249,12 +249,13 @@ SysLogger.getInstance = function() {
  * Init function, takes a configuration object. If a hostname is provided the transport is assumed
  * to be Transport.UDP
  * @param {Object} configuration object with the following keys:
- *          - tag       - {String}                  By default is __filename
- *          - facility  - {Facility|Number|String}  By default is "user"
- *          - hostname  - {String}                  By default is require("os").hostname()
- *          - address   - {String}                  By default is 127.0.0.1
- *          - port      - {Number}                  Defaults to 514
- *          - transport - {Transport|String}        Defaults to Transport.UDP
+ *          - tag        - {String}                  By default is __filename
+ *          - facility   - {Facility|Number|String}  By default is "user"
+ *          - hostname   - {String}                  By default is require("os").hostname()
+ *          - address    - {String}                  By default is 127.0.0.1
+ *          - port       - {Number}                  Defaults to 514
+ *          - transport  - {Transport|String}        Defaults to Transport.UDP
+ *          - splitLines - {Boolean}                 Defaults to false
  */
 SysLogger.prototype.set = function(config) {
     config = config || {} ;
@@ -267,6 +268,7 @@ SysLogger.prototype.set = function(config) {
     this.setPath(config.path);
     this.setMessageComposer(config.messageComposer);
     this.setTransport(Transport.UDP);
+    this.setSplitLines(config.splitLines);
 
     return this;
 };
@@ -329,13 +331,29 @@ SysLogger.prototype.setMessageComposer = function(composerFunction){
     return this;
 };
 
+SysLogger.prototype.setSplitLines = function(splitLines){
+    this.splitLines = splitLines || false;
+    return this;
+};
+
+
 /**
  * Send message
  * @param {String} message
  * @param {Severity} severity
  */
 SysLogger.prototype._send = function(message, severity, callback) {
-    this.transport(message, severity, callback) ;
+    var messages = undefined;
+
+    if(this.splitLines){
+      messages = message.split("\n");
+    } else {
+      messages = [message];
+    }
+
+    for(var i = 0;i < messages.length;i++){
+      this.transport(messages[i], severity, callback) ;
+    }
 };
 
 /**
