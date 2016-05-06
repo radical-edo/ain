@@ -35,8 +35,7 @@
     {
       "name": "Joseph Frazier (josephfrazier)",
       "email": ""
-    },
-
+    }
   ],
   "repository": {
     "type": "git",
@@ -45,7 +44,7 @@
   "bugs": {
     "url": "http://github.com/phuesler/ain/issues"
   },
-  { "license" : "MIT" }
+  "license" : "MIT",
   "licenses": [
     {
       "type": "MIT",
