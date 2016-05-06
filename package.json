@@ -14,7 +14,7 @@
     },
     {
       "name": "Patrick Huesler",
-      "email": "patrick.huesler@googlemail.com"
+      "email": "patrick.huesler@gmail.com"
     },
     {
       "name": "Mark Wubben",
@@ -31,7 +31,12 @@
     {
       "name": "J. Maurice",
       "email": "j@wiz.biz"
-    }
+    },
+    {
+      "name": "Joseph Frazier (josephfrazier)",
+      "email": ""
+    },
+
   ],
   "repository": {
     "type": "git",
